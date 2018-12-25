@@ -7,7 +7,7 @@ use app\common\library\Ems;
 use app\common\library\Sms;
 use fast\Random;
 use think\Validate;
-use tp_tools\Curl;
+use mikkle\tp_tools\Curl;
 /**
  * 会员接口
  */
@@ -22,6 +22,5 @@ class Test extends Api
     }
 
     public function test(){
-
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace tp_tools;
+namespace mikkle\tp_tools;
 
 class Curl
 {
