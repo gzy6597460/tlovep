@@ -11,6 +11,7 @@ use think\Lang;
 use think\Loader;
 use think\Request;
 use think\Response;
+use think\Log;
 
 /**
  * API控制器基类
@@ -22,7 +23,9 @@ class Api
      * @var Request Request 实例
      */
     protected $request;
-
+    protected $error;             //出错时候的记录
+    protected $log=[];            //要保存的记录
+    protected $saveLog = true ;   //是否保存日志
     /**
      * @var bool 验证失败是否抛出异常
      */
@@ -160,26 +163,30 @@ class Api
      * 操作成功返回的数据
      * @param string $msg   提示信息
      * @param mixed $data   要返回的数据
+     * @param mixed $extra   要返回的数据
+     * @param mixed $status   要返回的数据
      * @param int   $code   错误码，默认为1
      * @param string $type  输出类型
      * @param array $header 发送的 Header 信息
      */
-    protected function success($msg = '', $data = null, $code = 1, $type = null, array $header = [])
+    protected function success($msg = '', $data = null , $extra = null , $status = true , $code = 1, $type = null, array $header = [])
     {
-        $this->result($msg, $data, $code, $type, $header);
+        $this->result($msg, $data, $extra , $status , $code, $type, $header);
     }
 
     /**
      * 操作失败返回的数据
      * @param string $msg   提示信息
      * @param mixed $data   要返回的数据
+     * @param mixed  $extra   额外数据
+     * @param mixed  $status   状态
      * @param int   $code   错误码，默认为0
      * @param string $type  输出类型
      * @param array $header 发送的 Header 信息
      */
-    protected function error($msg = '', $data = null, $code = 0, $type = null, array $header = [])
+    protected function error($msg = '', $data = null , $extra = null , $status = false , $code = 0, $type = null, array $header = [])
     {
-        $this->result($msg, $data, $code, $type, $header);
+        $this->result($msg, $data , $extra , $status , $code, $type, $header);
     }
 
     /**
@@ -187,20 +194,25 @@ class Api
      * @access protected
      * @param mixed  $msg    提示信息
      * @param mixed  $data   要返回的数据
+     * @param mixed  $extra   额外的数据
+     * @param mixed  $status  返回状态信息
      * @param int    $code   错误码，默认为0
      * @param string $type   输出类型，支持json/xml/jsonp
      * @param array  $header 发送的 Header 信息
      * @return void
      * @throws HttpResponseException
      */
-    protected function result($msg, $data = null, $code = 0, $type = null, array $header = [])
+    protected function result($msg, $data = null, $extra = null, $status = null,$code = 0, $type = null, array $header = [])
     {
         $result = [
             'code' => $code,
+            'status' => $status,
             'msg'  => $msg,
             'time' => Request::instance()->server('REQUEST_TIME'),
             'data' => $data,
+            'extra'=> $extra
         ];
+
         // 如果未设置类型则自动判断
         $type = $type ? $type : ($this->request->param(config('var_jsonp_handler')) ? 'jsonp' : $this->responseType);
 
@@ -215,6 +227,7 @@ class Api
             $code = $code >= 1000 || $code < 200 ? 200 : $code;
         }
         $response = Response::create($result, $type, $code)->header($header);
+        $this->addLog($result);
         throw new HttpResponseException($response);
     }
 
@@ -324,4 +337,32 @@ class Api
         return true;
     }
 
+    protected function addLog($return=''){
+        $this->log[] =[
+            'return' => $return,
+        ];
+    }
+
+    protected function getData(){
+        if ($this->request->isPost()){
+            return $this->request->post();
+        }else{
+            return $this->request->get();
+        }
+    }
+    protected function saveLogAction(){
+        if (!empty($this->log)){
+            foreach($this->log as $value){
+                Log::write('[RETURN] '. var_export($value, true),'info');
+            }
+        }
+    }
+
+    public function __destruct()
+    {
+        //记录日志
+        if (!empty($this->log) && $this->saveLog == true){
+            $this->saveLogAction();
+        }
+    }
 }
