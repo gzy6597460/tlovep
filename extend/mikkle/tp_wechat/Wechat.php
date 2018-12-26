@@ -17,7 +17,6 @@ use mikkle\tp_wechat\src\Poi;
 use mikkle\tp_wechat\src\Receive;
 use mikkle\tp_wechat\src\Script;
 use mikkle\tp_wechat\src\User;
-
 use think\Config;
 
 class Wechat

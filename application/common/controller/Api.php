@@ -174,6 +174,11 @@ class Api
         $this->result($msg, $data, $extra , $status , $code, $type, $header);
     }
 
+    protected function successWithOutData($msg = '', $code = '')
+    {
+        return self::success($msg,null,null,true, $code);
+    }
+
     /**
      * 操作失败返回的数据
      * @param string $msg   提示信息
@@ -187,6 +192,11 @@ class Api
     protected function error($msg = '', $data = null , $extra = null , $status = false , $code = 0, $type = null, array $header = [])
     {
         $this->result($msg, $data , $extra , $status , $code, $type, $header);
+    }
+
+    protected function errorWithOutData($msg = '', $code = '')
+    {
+        return self::error($msg,null,null,false, $code);
     }
 
     /**
