@@ -106,7 +106,6 @@ class Api
 
         // token
         $token = $this->request->server('HTTP_TOKEN', $this->request->request('token', \think\Cookie::get('token')));
-
         $path = str_replace('.', '/', $controllername) . '/' . $actionname;
         // 设置当前请求的URI
         $this->auth->setRequestUri($path);
@@ -118,7 +117,7 @@ class Api
             //检测是否登录
             if (!$this->auth->isLogin())
             {
-                $this->error(__('Please login first'), null, 401);
+                $this->error(__('Please login first'), $token ,null ,false ,401);
             }
             // 判断是否需要验证权限
             if (!$this->auth->match($this->noNeedRight))
@@ -126,7 +125,7 @@ class Api
                 // 判断控制器和方法判断是否有对应权限
                 if (!$this->auth->check($path))
                 {
-                    $this->error(__('You have no permission'), null, 403);
+                    $this->successWithOutData(__('You have no permission'), 403);
                 }
             }
         }
@@ -198,6 +197,10 @@ class Api
         $this->result($msg, $data , $extra , $status , $code, $type, $header);
     }
 
+    /**
+     * @param string $msg
+     * @param string $code
+     */
     protected function errorWithOutData($msg = '', $code = '')
     {
         return self::error($msg,null,null,false, $code);
