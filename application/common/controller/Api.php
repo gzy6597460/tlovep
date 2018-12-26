@@ -174,6 +174,10 @@ class Api
         $this->result($msg, $data, $extra , $status , $code, $type, $header);
     }
 
+    /**
+     * @param string $msg
+     * @param string $code
+     */
     protected function successWithOutData($msg = '', $code = '')
     {
         return self::success($msg,null,null,true, $code);
