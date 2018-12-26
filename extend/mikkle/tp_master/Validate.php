@@ -10,13 +10,8 @@
 namespace mikkle\tp_master;
 
 
-use think\Facade;
 
-class Validate extends Facade
-{
-    protected static function getFacadeClass()
-    {
-        return 'think\Validate';
-    }
+
+class Validate extends \think\Validate{
 
 }

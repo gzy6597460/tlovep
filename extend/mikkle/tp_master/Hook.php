@@ -16,6 +16,6 @@ class Hook extends Facade
 {
     protected static function getFacadeClass()
     {
-        return 'think\Config';
+        return 'think\Hook';
     }
 }

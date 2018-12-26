@@ -27,12 +27,13 @@ abstract class WorkerCommand extends Command
     protected $redis;
     protected $listName;
     protected $pcntl;
+    protected $debug=false;
 
     public function __construct($name = null)
     {
         $this->redis = $this->redis();
         $this->listName = "worker_list";
-        $this->pcntl = true;
+        $this->pcntl = false;
         parent::__construct($name);
     }
 
@@ -46,9 +47,8 @@ abstract class WorkerCommand extends Command
         while (true) {
             //标记后端服务运行中
             $this->signWorking();
-            echo "==================================================" . PHP_EOL;
             $this->autoClass();
-            echo "==================================================" . PHP_EOL;
+            echo ( "==================================================".PHP_EOL  );
             $this->sleep();
         }
     }
@@ -117,20 +117,18 @@ abstract class WorkerCommand extends Command
     {
         try {
             if ($this->checkWorkerExists($work, $item)) {
-                echo "执行[{$work}]任务" . PHP_EOL;
+                $this->echoString( "执行[{$work}::{$item}]任务" );
                 $work::$item();
-                Log::notice("执行[{$work}::{$item}]任务");
             } elseif ($this->checkWorkerExists($work, "run")) {
-                echo "执行[{$work}]任务" . PHP_EOL;
+                $this->echoString( "执行[{$work}]任务" );
                 $work::run();
-                Log::notice("执行[{$work}::run]任务");
             } else {
-                echo "执行[{$work}::{$item}]任务的默认和指定方法都不存在" . PHP_EOL;
+                $this->echoString( "执行[{$work}::{$item}]任务的默认和指定方法都不存在" );
                 $this->redis->hdel($this->listName, $item);
             }
         } catch (Exception $e) {
-            echo "执行[{$work}]任务失败" . PHP_EOL;
-            Log::notice($e->getMessage());
+            $this->echoString( "执行[{$work}]任务失败".$e->getMessage() );
+            Log::error($e->getMessage());
             if ($this->pcntl) {
                 $this->pcntlKill();
             }
@@ -167,18 +165,16 @@ abstract class WorkerCommand extends Command
                     die ('could not fork');
                 } else if ($pid_2) {
                     // 父进程逻辑
-                    echo "父进程逻辑开始" . PHP_EOL;
+                    $this->echoString( "父进程逻辑开始" );
                     // 等待子进程中断，防止子进程成为僵尸进程。
                     // WNOHANG为非阻塞进程，具体请查阅pcntl_wait PHP官方文档
                     pcntl_wait($status, WNOHANG);
-                    echo "父进程逻辑结束" . PHP_EOL;
+                    $this->echoString( "父进程逻辑结束" );
                 } else {
                     // 子进程逻辑
-                    echo "子进程逻辑开始" . PHP_EOL;
-
+                    $this->echoString( "子进程逻辑开始" );
                     $this->runWorker($work, $item);
-
-                    echo "子进程逻辑结束" . PHP_EOL;
+                    $this->echoString( "子进程逻辑结束" );
                     $this->pcntlKill();
                 }
                 $this->pcntlKill();
@@ -214,7 +210,7 @@ abstract class WorkerCommand extends Command
         $second = $second ? $second : $this->sleep;
         //  echo "开始睡眠{$second}秒!当前时间:" . date('h:i:s') . PHP_EOL;
         sleep(sleep($second));   //TP5的命令行 sleep($second) 不生效
-        echo "睡眠{$second}秒成功!当前时间:" . date('h:i:s') . PHP_EOL;
+        $this->echoString( "睡眠{$second}秒成功!当前时间:" . date('Y-m-d H:i:s') );
     }
 
     /**
@@ -244,6 +240,16 @@ abstract class WorkerCommand extends Command
     protected static function redis()
     {
         return WorkerRedis::instance();
+    }
+
+    protected function echoString($text){
+        if ($this->debug){
+            if (is_string($text)|| is_numeric($text)){
+                echo $text. PHP_EOL;
+            }else{
+                echo json_encode($text). PHP_EOL;
+            }
+        }
     }
 
 }

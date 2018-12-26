@@ -37,16 +37,16 @@ class ResponseCode
     /**
      * 定义返回码的数组名称
      */
-    static protected $returnCodeName=[
-        "codeName"=>"response_code",
-        "dataName"=>"response_data",
-        "messageName"=>"response_msg",
+    static protected $returnCodeName = [
+        "codeName" => "response_code",
+        "dataName" => "response_data",
+        "messageName" => "response_msg",
     ];
 
     /**
      * 定义返回码的massage名称
      */
-    static protected $returnCode=[
+    static protected $returnCode = [
         '1001' => '操作成功',
         '1002' => '你想做什么呢', //非法的请求方式 非ajax
         '1003' => '请求参数错误', //如参数不完整,类型不正确
@@ -86,29 +86,32 @@ class ResponseCode
      * @param array $append 附加信息
      * @return array
      */
-    static public function code($code = '', $data = [], $msg = '' , array $append=[]){
+    static public function code($code = '', $data = [], $msg = '', array $append = [])
+    {
         $returnCode = self::$defaultCode;
         if (empty($code)) {
             return $returnCode;
-        }else{
+        } else {
             $returnCode["code"] = $code;
         }
-        if (in_array($code,self::$successCode) || isset(self::$successCode[$code])){
-            if (is_string($data)||is_numeric($data )){
-                $returnCode["data"]  = (string)$data;
-            }elseif(is_array($data )){
-                foreach ( $data as $i=>$value){
-                    if (is_string($value)||is_numeric($value )){
+        if (in_array($code, self::$successCode) || isset(self::$successCode[$code])) {
+            if (is_string($data) || is_numeric($data)) {
+                $returnCode["data"] = (string)$data;
+            } elseif (is_array($data)) {
+                foreach ($data as $i => $value) {
+                    if (is_string($value) || is_numeric($value)) {
                         $returnCode["data"] [$i] = (string)$value;
-                    }else{
+                    } elseif ($value === null) {
+                        $returnCode["data"] [$i] = "";
+                    } else {
                         $returnCode["data"] [$i] = $value;
                     }
                 }
             }
         }
-        if(!empty($msg)){
+        if (!empty($msg)) {
             $returnCode['msg'] = $msg;
-        }else if (isset(self::$returnCode[$code]) ) {
+        } else if (isset(self::$returnCode[$code])) {
             $returnCode['msg'] = self::$returnCode[$code];
         }
         $return = [
@@ -116,11 +119,11 @@ class ResponseCode
             self::$returnCodeName["dataName"] => $returnCode["data"],
             self::$returnCodeName["messageName"] => (string)$returnCode["msg"],
         ];
-        if (!empty($append)&& is_array($append)){
-            $return=array_merge($return,$append);
+        if (!empty($append) && is_array($append)) {
+            $return = array_merge($return, $append);
         }
-        if(empty( $return[self::$returnCodeName["dataName"] ] )){
-            unset( $return[self::$returnCodeName["dataName"] ]);
+        if (empty($return[self::$returnCodeName["dataName"]])) {
+            unset($return[self::$returnCodeName["dataName"]]);
         }
         return $return;
 
@@ -135,8 +138,9 @@ class ResponseCode
      * @param array $append
      * @return array
      */
-    static public function codeWithoutData($code = '', $msg = '',array $append=[]){
-        return self::code($code,[],$msg,$append);
+    static public function codeWithoutData($code = '', $msg = '', array $append = [])
+    {
+        return self::code($code, [], $msg, $append);
     }
 
     /**
@@ -150,10 +154,12 @@ class ResponseCode
      * @param array $append
      * @return array
      */
-    static public function jsonCode($code = '', $data = [], $msg = '', array $append=[]){
+    static public function jsonCode($code = '', $data = [], $msg = '', array $append = [])
+    {
         self::returnJsonType();
-        return self::code($code,$data,$msg,$append);
+        return self::code($code, $data, $msg, $append);
     }
+
     /**
      * 别名方法 返回json格式返回码 无data值
      * Power: Mikkle
@@ -163,18 +169,17 @@ class ResponseCode
      * @param array $append
      * @return array
      */
-    static public function jsonCodeWithoutData($code = '', $msg = '' ,array $append=[]){
+    static public function jsonCodeWithoutData($code = '', $msg = '', array $append = [])
+    {
         self::returnJsonType();
-        return self::code($code,[],$msg,$append);
+        return self::code($code, [], $msg, $append);
     }
 
 
-
-
-    static public function returnJsonType(){
-        Config::set("default_return_type","json");
+    static public function returnJsonType()
+    {
+        Config::set("default_return_type", "json");
     }
-
 
 
 }

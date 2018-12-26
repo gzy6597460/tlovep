@@ -74,14 +74,14 @@ class JsApi extends WxpayClientBase
      */
     public function getJsPayParamsByPrepayId($prepayId)
     {
-        $jsApiObj["appId"] = config('wechat_appid');
+        $jsApiObj["appId"] = $this->appid;
         $timeStamp = time();
         $jsApiObj["timeStamp"] = "$timeStamp";
         $jsApiObj["nonceStr"] = Tools::createNoncestr();
         $jsApiObj["package"] = "prepay_id={$prepayId}";
         $jsApiObj["signType"] = "MD5";
         $jsApiObj["paySign"] = Tools::getSignByKey($jsApiObj,$this->key);
-        return  json_encode($jsApiObj);
+        return  $jsApiObj;
     }
 
 

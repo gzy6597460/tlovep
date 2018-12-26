@@ -96,6 +96,20 @@ abstract class CycleWorkBase
     }
 
     /**
+     *
+     * 当命令行未运行 直接执行
+     * description add
+     * User: Mikkle
+     * QQ:776329498
+     */
+    static public function stop(){
+        return self::signWorkingStop() ? "true":"false";
+    }
+
+
+
+
+    /**
      * title 循环处理的任务
      * description runCycleHandle
      * User: Mikkle
@@ -118,9 +132,8 @@ abstract class CycleWorkBase
             $instance=self::instance();
             $i =0;
             while ( true ){
-                echo self::checkWorkingStop() ;
                 if ( self::checkWorkingStop() ){
-                    echo  "任务被终止!";
+                    echo  "任务被终止!".PHP_EOL;
                     break;
                 }
                 self::signWorking();
@@ -140,7 +153,7 @@ abstract class CycleWorkBase
                 }
                 $this->sleep($time);
                 Log::notice("睡眠$time 秒,循环执行程序执行程序".$this->workerName );
-                echo  "睡眠$time 秒,循环执行程序执行程序.$this->workerName ";
+                echo  "睡眠$time 秒,循环执行程序执行程序.$this->workerName ".PHP_EOL;
 
             }
             $this-> clearWorkingWork();
@@ -150,39 +163,31 @@ abstract class CycleWorkBase
         }
     }
 
-    /**
-     *
-     * 当命令行未运行 直接执行
-     * description add
-     * User: Mikkle
-     * QQ:776329498
-     */
-    static public function stop(){
-        return self::signWorkingStop();
-    }
 
     /**
-     * title 查看运行状态
+     * title
      * description status
      * User: Mikkle
      * QQ:776329498
      * @return bool
+     * @param string $result
+     * @return string
      */
-    static public function status(){
+    static public function status($result="int"){
         $instance=self::instance();
-        if (!empty($instance->startTime ) && is_int( $instance->startTime ) ){
-            if ( time()> $instance->startTime ){
+        if (!empty($instance->startTime ) && is_numeric( $instance->startTime ) ){
+            if ( time() > $instance->startTime ){
                 return (string)self::checkWorking();
             }else{
                 return "waiting";
             }
         }else{
-            return (string)self::checkWorking();
+            return (string) self::checkWorking();
         }
     }
 
     protected function getNextRunTime(){
-        if (!empty( $this->nextTime ) && is_int( $this->nextTime)){
+        if (!empty( $this->nextTime ) && is_numeric( $this->nextTime)){
             return $this->nextTime;
         }
         return 60;
@@ -225,20 +230,13 @@ abstract class CycleWorkBase
     }
 
 
-
-
-
-
-
-
-
-
     /**
      * 命令行执行的方法
      * Power: Mikkle
      * Email：776329498@qq.com
      */
     static public function run(){
+
         $instance = static::instance();
         try {
             $redisData = $instance->redis->hGet("cycle_list", $instance->listName);
@@ -257,7 +255,7 @@ abstract class CycleWorkBase
             }
         } catch (Exception $e) {
             Log::error($e->getMessage());
-            echo($e->getMessage());
+            echo($e->getMessage()).PHP_EOL;
         }
     }
 
@@ -339,7 +337,7 @@ abstract class CycleWorkBase
             $ci = $time/10;
             for($i=0; $i<$ci;$i++){
                 self::signWorking();
-                echo "已睡眠 10 秒";
+                echo "已睡眠 10 秒".PHP_EOL;
                 sleep(10);
             }
             sleep(sleep($time%10));
@@ -424,7 +422,7 @@ abstract class CycleWorkBase
         self::redis()->set(self::instance()->workerName."_run","true",$time);
     }
 
-    static protected function checkWorking(){
+    static public function checkWorking(){
         return self::redis()->get(self::instance()->workerName."_run") ? true :false;
     }
     static  protected function clearWorkingWork(){

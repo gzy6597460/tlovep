@@ -15,8 +15,8 @@ use mikkle\tp_master\Db;
 use mikkle\tp_master\Debug;
 use mikkle\tp_master\Exception;
 use mikkle\tp_master\Log;
-use mikkle\tp_master\Request;
 use mikkle\tp_tools\Rand;
+use think\facade\Request;
 
 /**
  * title 逻辑层基类
@@ -51,6 +51,11 @@ abstract class LogicBase
         $this->_initialize();
     }
 
+
+    public static function instance()
+    {
+        return  new static();
+    }
     abstract public function _initialize();
 
     public function addError($error){
@@ -147,10 +152,11 @@ abstract class LogicBase
                     "function" => $this->functionName,
                     "args" => is_string($this->args) ? $this->args : json_encode($this->args),
                     "error" => $this->error ? $this->error : null,
-                    "ip" => Request::instance()->ip(),
+                    "ip" => Request::ip(),
                     "run_time" => Debug::getRangeTime("start", "end"),
                     "result" => is_string($this->result) ? $this->result : json_encode($this->result),
                     "time" => $this->timeString,
+                    "create_time"=>time(),
                 ];
                 if ($this->recordConnect){
                     Db::connect($this->recordConnect)->table($this->recordTable)->insert($operateData);

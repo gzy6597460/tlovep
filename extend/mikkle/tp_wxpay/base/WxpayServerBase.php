@@ -23,15 +23,47 @@ class WxpayServerBase
     protected $certPath;
     protected $keyPath;
     protected $returnParams;//返回参数，类型为关联数组
+    protected $xml;
+    protected $autoSaveData =true; //收费自动转换存储xml
 
-    public function __construct($options)
+    public function __construct($options=[])
     {
-        $this->setOptions($options);
+        $this->xml = isset( $GLOBALS["HTTP_RAW_POST_DATA"] ) ? $GLOBALS["HTTP_RAW_POST_DATA"] : null;
+        if ($options){
+            $this->setOptions($options);
+        }
         $this->_initialize();
+
+        $this->autoSaveData && $this->savePostXmlDataAsArray();
     }
     public function _initialize()
     {
 
+    }
+
+    /**
+ * 将微信的请求xml转换成关联数组，以方便数据处理
+ */
+    function savePostXmlDataAsArray()
+    {
+        if ($this->xml) {
+            $this->data = Tools::xmlToArray($this->xml);
+        } else {
+            $this->data = null;
+        }
+    }
+
+    /**
+     * 将微信的请求xml转换成关联数组，以方便数据处理
+     */
+    public function getPostData()
+    {
+        return $this->data ;
+    }
+
+    public function checkSign(){
+        if (empty($this->key) || empty($this->data)) return false;
+        return Tools::checkSignByKey($this->data,$this->key);
     }
 
     protected function setOptions($options){

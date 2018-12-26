@@ -14,6 +14,14 @@ use mikkle\tp_master\Db;
 use mikkle\tp_master\Exception;
 use mikkle\tp_master\Log;
 
+/**
+ * title 废弃了  不要用了  直接用 RedisHashInfoBase
+ * 仅作为学习参考吧
+ * User: Mikkle
+ * QQ:776329498
+ * Class RedisHash
+ * @package mikkle\tp_redis
+ */
 class RedisHash
 {
     protected $redisHash = null;//redis实例化时静态变量
@@ -243,7 +251,6 @@ class RedisHash
             default:
                 return false;
         }
-
     }
 
     /**

@@ -18,7 +18,10 @@ use mikkle\tp_wxpay\src\NativeCall;
 use mikkle\tp_wxpay\src\NativeLink;
 use mikkle\tp_wxpay\src\Notify;
 use mikkle\tp_wxpay\src\OrderQuery;
+use mikkle\tp_wxpay\src\PayBank;
+use mikkle\tp_wxpay\src\RsaPublicKey;
 use mikkle\tp_wxpay\src\ShortUrl;
+use mikkle\tp_wxpay\src\Transfers;
 use mikkle\tp_wxpay\src\UnifiedOrder;
 
 class Wxpay
@@ -27,7 +30,8 @@ class Wxpay
     protected $options=[];
     public function __construct($options=[])
     {
-            $this->options=empty($this->options)? $this->getOptions($options) : array_merge( [],$this->getOptions($options));
+            $this->options=empty($this->options)? $this->getOptions($options) : array_merge( $this->options,$this->getOptions($options));
+
     }
 
     public static function instance($options=[])
@@ -46,8 +50,10 @@ class Wxpay
     }
 
 
-        protected  function getOptions( $options = []){
-        if (empty($options)&& !empty( Config::get("wxpay.default_options_name"))){
+        protected   function getOptions( $options = []){
+        if (!empty($this->options)&&empty($options)){
+            $options=$this->options;
+        }elseif (empty($options)&& !empty( Config::get("wxpay.default_options_name"))){
             $options = Config::get("wxpay.".Config::get("wxpay.default_options_name"));
         }elseif(is_string($options)&&!empty( Config::get("wxpay.$options"))){
             $options = Config::get("wxpay.$options");
@@ -56,6 +62,7 @@ class Wxpay
             $error[]="微信支付配置参数缺失";
             throw new Exception("微信支付配置参数不存在");
         }elseif(isset($options["appid"])&&isset($options["secret"])&&isset($options["mch_id"])&&isset($options["key"])){
+
             return $options ;
         }else{
             if (!$this->options){
@@ -64,8 +71,22 @@ class Wxpay
         }
     }
 
-    public function unifiedOrder(){
-            return new UnifiedOrder($this->options);
+    /**
+     * title
+     * description unifiedOrder
+     * User: Mikkle
+     * QQ:776329498
+     * @param array $options
+     * @return UnifiedOrder
+     */
+     public function unifiedOrder($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else{
+            return self::$instance[$sn."_".__FUNCTION__] = new UnifiedOrder($options);
+        }
     }
 
     /**
@@ -73,34 +94,98 @@ class Wxpay
      * description jsApi
      * User: Mikkle
      * QQ:776329498
+     * @param array $options
      * @return JsApi
      */
-    public function jsApi(){
-        return new JsApi( $this->options );
+    public function jsApi($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else {
+            return self::$instance[$sn."_".__FUNCTION__] = new JsApi($options);
+        }
     }
 
-    public function DownloadBill(){
-        return new DownloadBill( $this->options );
+    public function DownloadBill($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else {
+            return self::$instance[$sn."_".__FUNCTION__] = new DownloadBill($options);
+        }
     }
-    public function NativeCall(){
-        return new NativeCall( $this->options );
-    }
-    public function NativeLink(){
-        return new NativeLink( $this->options );
-    }
-
-    public function Notify(){
-        return new Notify( $this->options );
-    }
-
-    public function OrderQuery(){
-        return new OrderQuery( $this->options );
-    }
-
-    public function ShortUrl(){
-        return new ShortUrl( $this->options );
+    public function NativeCall($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else {
+            return self::$instance[$sn."_".__FUNCTION__] = new NativeCall($options);
+        }
     }
 
+
+    public function Notify($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else {
+            return self::$instance[$sn."_".__FUNCTION__] = new Notify($options);
+        }
+    }
+
+    public function OrderQuery($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else {
+            return self::$instance[$sn."_".__FUNCTION__] = new OrderQuery($options);
+        }
+    }
+
+    public function ShortUrl($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else {
+            return self::$instance[$sn."_".__FUNCTION__] = new ShortUrl($options);
+        }
+    }
+
+    public function RsaPublicKey($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else {
+            return self::$instance[$sn."_".__FUNCTION__] = new RsaPublicKey($options);
+        }
+    }
+
+    public function PayBank($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else {
+            return self::$instance[$sn."_".__FUNCTION__] = new PayBank($options);
+        }
+    }
+
+    public function Transfers($options=[]){
+        $options =self::getOptions($options);
+        $sn = self::getSn($options);
+        if(isset(self::$instance[$sn."_".__FUNCTION__])){
+            return self::$instance[$sn."_".__FUNCTION__];
+        }else {
+            return self::$instance[$sn."_".__FUNCTION__] = new Transfers($options);
+        }
+    }
 
 
 

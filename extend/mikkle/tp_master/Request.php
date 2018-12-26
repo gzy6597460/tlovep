@@ -22,9 +22,11 @@ class Request extends \think\Request
      */
     public static function instance($options = [])
     {
-        if (is_null(self::$ins)) {
-            self::$ins = new static($options);
+        if (isset(self::$ins)) {
+            return self::$ins;
         }
+        self::$ins = new static($options);
         return self::$ins;
     }
+
 }

@@ -9,13 +9,35 @@
 
 namespace mikkle\tp_tools;
 
-use mikkle\tp_master\Loader;
 use mikkle\tp_master\Request;
 use think\Validate;
 use think\Model;
 use mikkle\tp_master\Exception;
-class StaticFunction
+class Functions
 {
+
+    static public function checkArrayValueStatus($array,$value){
+        switch (true){
+            case (empty($array)||!is_array($array)):
+                return false;
+                break;
+            case (is_array($value)):
+                foreach ($value as $item){
+                    if (!isset($array[$item]) || (empty($array[$item]) && (string)$array[$item]!=="0")){
+                        return false;
+                    }
+                }
+                break;
+            case (is_string($value)):
+                if (!isset($array[$value]) || (empty($array[$value] ) && (string)$array[$value]!=="0")){
+                    return false;
+                }
+                break;
+            default:
+        }
+        return true;
+    }
+
     static public function  instanceOfValidate($class){
         return self::instanceOfClassHandle($class,"validate");
     }

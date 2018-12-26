@@ -7,10 +7,10 @@
  * Time: 11:23
  */
 
-namespace tp_tools;
+namespace mikkle\tp_tools;
 
 
-use think\Config;
+use mikkle\tp_master\Config;
 
 /**
  *
@@ -27,6 +27,7 @@ class ShowCode
      */
     static protected $successCode = [
         "1001",
+        "1011",
         "1066", //充值信息通知
         "1077", //获取支付地址错误
         "1088",  //补录取车  通知指定收费员

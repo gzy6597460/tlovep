@@ -1,4 +1,11 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * Power By Mikkle
+ * Email：776329498@qq.com
+ * Date: 2017/8/30
+ * Time: 9:21
+ */
 
 namespace mikkle\tp_wechat;
 
@@ -17,6 +24,7 @@ use mikkle\tp_wechat\src\Poi;
 use mikkle\tp_wechat\src\Receive;
 use mikkle\tp_wechat\src\Script;
 use mikkle\tp_wechat\src\User;
+
 use think\Config;
 
 class Wechat

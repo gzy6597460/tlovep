@@ -16,6 +16,7 @@ use mikkle\tp_master\Cookie;
 use mikkle\tp_master\Request;
 use mikkle\tp_master\Session;
 use mikkle\tp_model\ModelTools;
+use think\Container;
 
 class AuthWeb
 {
@@ -49,33 +50,31 @@ class AuthWeb
             default:
                 $this->loginType = "session";
         }
-        //公共页面 必须小写
-        $this->publicWeb =[
-            "main.index"=>[
-                "index"=>true,
-                "main"=>true,
-                "getmenujson"=>true,
-            ],
-            "main.login"=>[
 
-            ],
-        ];
         if (isset($options["public_web"])&&is_array($options["public_web"])){
             $this->publicWeb = array_merge($this->publicWeb ,$options["public_web"] )  ;
         }
-        $this->request = Request::instance();
+        $this->request = Container::get('request');;
         $this->module = $this->request->module();
         $this->controller = $this->request->controller();
         $this->action = $this->request->action();
+        $this->_initialize();
+
+    }
+
+    protected function _initialize(){
+
     }
 
 
     public function checkNodeAuth()
     {
+
         if ($this->checkIsSuperAdmin()) {
             return true;
         } else {
             //跳过登录系列的公共页面检测以及主页权限
+
             if ($this->checkPublicWeb()) {
                 return true;
             }
@@ -194,7 +193,9 @@ class AuthWeb
                 break;
         }
         if($this->adminInfo){
-            if (isset($this->adminInfo["grade"]) &&$this->adminInfo["grade"]== 0 ){
+
+            $grade=is_object($this->adminInfo)?$this->adminInfo->grade:$this->adminInfo["grade"];
+            if (isset($grade) &&  $grade== 0 ){
                 $this->isSuperAdmin = true;
                 return true;
             }

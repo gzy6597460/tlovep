@@ -92,11 +92,11 @@ class Rand
     /*
      * 获取Redis中使用的当天时间时间字符串
      */
-    static public function getDateString($time=null){
+    static public function getDateString($time=null,$format ="Ymd"){
         if ( $time ){
-            return date("Ymd",$time) ;
+            return date($format,$time) ;
         }
-        return date("Ymd") ;
+        return date($format) ;
     }
 
     /*
@@ -157,4 +157,29 @@ class Rand
         );
     }
 
+    static public function getRandKeyByWeight(array $weight = array()) {
+        $roll = rand ( 1, array_sum ( $weight ) );
+        $_tmpWeight = 0;
+        $rollKey = 0;
+        foreach ( $weight as $k => $v ) {
+            $min = $_tmpWeight;
+            $_tmpWeight += $v;
+            $max = $_tmpWeight;
+            if ($roll > $min && $roll <= $max) {
+                $rollKey = $k;
+                break;
+            }
+        }
+        return $rollKey;
+    }
+
+    static public 	 function checkEmpty($value) {
+        if (!isset($value))
+            return true;
+        if ($value === null)
+            return true;
+        if (trim($value) === "")
+            return true;
+        return false;
+    }
 }

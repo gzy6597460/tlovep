@@ -29,6 +29,12 @@ class Tools
         return $ret;
     }
 
+    static public function encryptByRsa($input,$pubKey ) {
+
+        openssl_public_encrypt($input,$output,$pubKey);
+        return base64_encode($output);
+    }
+
     /*
      * 生成签名
      */
@@ -41,11 +47,12 @@ class Tools
     /*
      * 检验签名
      */
-    function checkSignByKey($data,$key)
+    static public function checkSignByKey($data,$key)
     {
+        if (!isset( $data['sign'])) return false ;
+        $sign = $data['sign'];
         unset($data['sign']);
-        $sign = Tools::getSignByKey($data,$key);//本地签名
-        return ($data['sign'] == $sign) ? TRUE :FALSE;
+        return (Tools::getSignByKey($data,$key) == $sign) ? true : false;
     }
 
     /*
@@ -89,6 +96,19 @@ class Tools
         $xml.="</xml>";
         return $xml;
     }
+
+    static public function arrayToXmlWithoutCDATA($arr)
+    {
+        $xml = "<xml>";
+        foreach ($arr as $key=>$val)
+        {
+
+                $xml.="<{$key}>{$val}</{$key}>";
+        }
+        $xml.="</xml>";
+        return $xml;
+    }
+
 
     /*
      * 	作用：将xml转为array
@@ -154,7 +174,7 @@ class Tools
     /*
      * 	作用：使用证书，以post方式提交xml到对应的接口url
      */
-    static public function postXmlSSLCurl($xml,$url,$certPath,$keyPath,$second=30)
+    static public function postXmlSSLCurl($xml,$url,$certPath,$keyPath,$caPath=null,$second=30)
     {
         $ch = curl_init();
         //超时时间
@@ -163,8 +183,11 @@ class Tools
         //curl_setopt($ch,CURLOPT_PROXY, '8.8.8.8');
         //curl_setopt($ch,CURLOPT_PROXYPORT, 8080);
         curl_setopt($ch,CURLOPT_URL, $url);
-        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,FALSE);
-        curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true); // 只信任CA颁布的证书
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2); // 检查证书中是否设置域名，并且是否与提供的主机名匹配
+//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);// 终止从服务端进行验证
+//        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);//
+
         //设置header
         curl_setopt($ch,CURLOPT_HEADER,FALSE);
         //要求结果为字符串且输出到屏幕上
@@ -177,6 +200,11 @@ class Tools
         //默认格式为PEM，可以注释
         curl_setopt($ch,CURLOPT_SSLKEYTYPE,'PEM');
         curl_setopt($ch,CURLOPT_SSLKEY, $keyPath);
+        if($caPath){
+            curl_setopt($ch,CURLOPT_SSLKEYTYPE,'PEM');
+            curl_setopt ( $ch, CURLOPT_CAINFO, $caPath );
+        }
+
         //post提交方式
         curl_setopt($ch,CURLOPT_POST, true);
         curl_setopt($ch,CURLOPT_POSTFIELDS,$xml);
@@ -187,7 +215,13 @@ class Tools
             return $data;
         }
         else {
+
             $error = curl_errno($ch);
+            if ( $error==52) {
+                echo "curl出错，:$certPath"."<br>";
+                echo "curl出错，:$keyPath"."<br>";
+            }
+
             echo "curl出错，错误码:$error"."<br>";
             echo "<a href='http://curl.haxx.se/libcurl/c/libcurl-errors.html'>错误原因查询</a></br>";
             curl_close($ch);

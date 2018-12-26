@@ -20,7 +20,6 @@ class UnifiedOrder extends WxpayClientBase
     protected $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
     public function _initialize()
     {
-        $this->params["spbill_create_ip"] =Tools::getRealIp();//终端ip
 
     }
 
@@ -43,6 +42,9 @@ class UnifiedOrder extends WxpayClientBase
         } elseif ($this->params["trade_type"] == "NATIVE" &&
             $this->params["product_id"] == null ) {
             throw new Exception("统一支付接口中，缺少必填参数 product_id！trade_type为NATIVE时，product_id 为必填参数！" . "<br>");
+        }
+        if (!isset( $this->params["spbill_create_ip"] ) || $this->params["spbill_create_ip"] == null){
+            $this->params["spbill_create_ip"] =Tools::getRealIp();//终端ip
         }
     }
 
@@ -68,5 +70,6 @@ class UnifiedOrder extends WxpayClientBase
         }
         return false;
     }
+
 
 }

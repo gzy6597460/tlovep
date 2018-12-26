@@ -7,13 +7,13 @@
  * Time: 11:58
  */
 
-namespace tp_aliyun;
+namespace mikkle\tp_aliyun;
 
-use think\Exception;
-use think\Config;
-use think\Log;
-use think\Validate;
-use tp_tools\ShowCode;
+use mikkle\tp_master\Exception;
+use mikkle\tp_master\Config;
+use mikkle\tp_master\Log;
+use mikkle\tp_master\Validate;
+use mikkle\tp_tools\ShowCode;
 
 class SendSms
 {

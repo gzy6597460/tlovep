@@ -54,14 +54,14 @@ abstract class RedisHashInfoBase
 
     public static function instance($info_id)
     {
-        $sn = md5(json_encode($info_id));
+        $sn = md5(json_encode((string)$info_id));
         if (self::$instance[$sn]){
             return self::$instance[$sn];
         }
         return  new static($info_id);
     }
 
-    abstract public function _initialize();
+    abstract protected function _initialize();
 
     public function checkExists(){
         $key=$this->createInfoKey();
@@ -220,7 +220,14 @@ abstract class RedisHashInfoBase
 
     public function getInfoList($array=[]){
         $key=$this->createInfoKey();
-        return $this->redis->hGet($key,$array)  ;
+        if (!$this->checkExists()){
+            return false;
+        }
+        $list = $this->redis->hGet($key,$array)  ;
+        if (isset( $list["is_change"] ) ){
+            unset( $list["is_change"] ) ;
+        }
+        return $list ;
     }
 
     public function removeField($field){
@@ -242,6 +249,8 @@ abstract class RedisHashInfoBase
 
     public function delete(){
         $key=$this->createInfoKey();
+        $zKey="set_".$key;
+        $this->redis->delete($zKey) ;
         return $this->redis->delete($key)  ;
     }
 
@@ -275,9 +284,13 @@ abstract class RedisHashInfoBase
                 if ($complete && isset( $fieldList[$this->completeTime])){
                     $info[$this->completeTime]=time();
                 }
-                unset( $info[$this->pk]);
-                unset( $info["id"]);
-                if (Db::table($this->table)->where([
+                if (isset( $info[$this->pk] ) ){
+                    unset( $info[$this->pk]);
+                }
+                if (isset( $info["id"] ) ){
+                    unset( $info["id"]);
+                }
+                if (Db::connect($this->connect)->table($this->table)->where([
                     $this->pk => $this->infoId,
                 ])->update($info)) {
                     return true;
@@ -293,17 +306,22 @@ abstract class RedisHashInfoBase
                 if ($complete && isset( $fieldList[$this->completeTime])){
                     $info[$this->completeTime]=time();
                 }
-                unset( $info["id"]);
-                if (Db::table($this->table)->insert($info)) {
+                if (isset( $info["id"]) && $this->pk!= "id"){
+                    unset($info["id"] );
+                }
+                if (!isset($info[$this->pk] )){
+                    $info[$this->pk] = $this->infoId;
+                }
+                if (Db::connect($this->connect)->table($this->table)->insert($info)) {
                     return true;
                 } else {
                     Log::error("方式为写入失败");
-                    Log::notice($info);
+                    Log::error($info);
                     return false;
                 }
             }
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return false;
         }
     }
@@ -311,7 +329,7 @@ abstract class RedisHashInfoBase
 
     protected function getTableFieldList(){
         if ($this->table){
-            return Db::cache($this->table."_field_list" , 60)->getTableInfo($this->table, 'fields');
+            return Db::connect($this->connect)->cache($this->table."_field_list" , 60)->getTableFields($this->table);
         }else{
             return [];
         }
@@ -327,7 +345,7 @@ abstract class RedisHashInfoBase
     public function checkTableDataExists(){
         try {
             if ($this->table && $this->pk) {
-                return (Db::table($this->table)->where([
+                return (Db::connect($this->connect)->table($this->table)->where([
                         $this->pk => $this->infoId,
                     ])->count() >0) ? true : false;
             } else {
@@ -349,7 +367,7 @@ abstract class RedisHashInfoBase
     public function deleteTableData(){
         try {
             if ($this->table && $this->pk) {
-                return (Db::table($this->table)->where([
+                return (Db::connect($this->connect)->table($this->table)->where([
                         $this->pk => $this->infoId,
                     ])->delete() == 1) ? true : false;
             } else {
@@ -366,7 +384,7 @@ abstract class RedisHashInfoBase
     public function initTableData(){
         try {
             if ($this->table && $this->pk) {
-                $list =  Db::table($this->table)->where([
+                $list =  Db::connect($this->connect)->table($this->table)->where([
                         $this->pk => $this->infoId,
                     ])->find();
                 if ($list){
@@ -420,7 +438,7 @@ abstract class RedisHashInfoBase
                 break;
             case (is_array($value)):
                 foreach ($value as $item){
-                    if (!isset($array[$item]) || (empty($array[$item]) && $array[$item]!==0)){
+                    if (!isset($array[$item]) || (empty($array[$item]) && (string)$array[$item]!=="0")){
                         if ($error==true) {
                             $this->addError("要检测的数组数据有不存在键值{$item}");
                         }
@@ -429,7 +447,7 @@ abstract class RedisHashInfoBase
                 }
                 break;
             case (is_string($value)):
-                if (!isset($array[$value]) || empty($array[$value] && $array[$value]!==0)){
+                if (!isset($array[$value]) || empty($array[$value] && (string)$array[$value]!=="0")){
                     if ($error==true) {
                         $this->addError("要检测的数组数据有不存在键值{$value}");
                     }

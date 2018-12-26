@@ -26,6 +26,7 @@ abstract class WorkerBase
     protected $saveLog = false;
     protected $tableName = "mk_log_service_queue";
     protected $error;
+    protected $debug=false;
 
     /**
      * Base constructor.
@@ -119,12 +120,12 @@ abstract class WorkerBase
             switch (true) {
                 case (self::checkCommandRun()):
                     $instance->redis()->lpush($instance->listName, $data);
-                    Log::notice("Command service start work!!");
+                    $instance->echoString( "Command service start work!!");
                     $instance->runWorker($handleName);
                     break;
                 default:
-                    Log::notice("Command service No away!!");
-                    $instance->runHandle($data);
+                    $instance->runHandle(json_decode( $data ,true));
+                    $instance->echoString( "Command service No away!!");
             }
             return true;
         } catch (Exception $e) {
@@ -156,11 +157,14 @@ abstract class WorkerBase
                     break;
                 }
                 $i++;
-                sleep(1);
+                if ($i%100==0){
+                    sleep(1);
+                }
             }
-            echo "执行了{$i}次任务" . PHP_EOL;
+            $instance->echoString("执行了{$i}次任务" );
+
         } catch (Exception $e) {
-            Log::error($e);
+
             Log::error($e->getMessage());
             echo($e->getMessage());
         }
@@ -247,5 +251,12 @@ abstract class WorkerBase
     {
         sleep(sleep($time));
     }
+
+    protected function echoString($text){
+        if ($this->debug){
+            Log::notice( $text);
+        }
+    }
+
 
 }

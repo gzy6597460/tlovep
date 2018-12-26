@@ -37,7 +37,7 @@ class ApiCenter
 
     public function __construct($options=[])
     {
-        $this->request=Request::instance();
+        $this->request= new Request();
         if(isset($options["data"])){
             $this->data=$options["data"];
         }
@@ -458,8 +458,8 @@ class ApiCenter
                     list($this->validate, $this->scene) = explode('.', $this->validate);
                 }
                 $this->validateClass = Loader::validate($this->validate);
-                if (!empty($scene)) {
-                    $this->validateClass->scene($scene);
+                if (!empty($this->scene)) {
+                    $this->validateClass->scene($this->scene);
                 }
         }
         if (!$this->validateClass->check($this->saveData)) {
@@ -501,12 +501,11 @@ class ApiCenter
      * @param $array
      * @return array
      */
-    static public function buildParameter($array)
+     public function buildParameter($array)
     {
         $data=[];
-        $request=Request::instance();
         foreach( $array as $item=>$value ){
-            $data[$item] = trim($request->param($value));
+            $data[$item] = trim($this->request->request($value));
         }
         return $data;
     }

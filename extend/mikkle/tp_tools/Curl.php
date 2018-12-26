@@ -1,8 +1,23 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * Power By Mikkle
+ * Email：776329498@qq.com
+ * Date: 2017/7/24
+ * Time: 15:32
+ */
+
 namespace mikkle\tp_tools;
+
 
 class Curl
 {
+    /**
+ * Power: Mikkle
+ * Email：776329498@qq.com
+ * @param $url
+ * @return bool|mixed
+ */
     static public function get($url){
         $oCurl = curl_init();
         if(stripos($url,"https://")!==FALSE){
@@ -22,6 +37,12 @@ class Curl
         }
     }
 
+    /**
+     * Power: Mikkle
+     * Email：776329498@qq.com
+     * @param $url
+     * @return bool|mixed
+     */
     static public function getXml($url){
         $oCurl = curl_init();
         if(stripos($url,"https://")!==FALSE){

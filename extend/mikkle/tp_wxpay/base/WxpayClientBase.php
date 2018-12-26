@@ -28,6 +28,8 @@ abstract class WxpayClientBase
      protected $key;
      protected $certPath;
      protected $keyPath;
+     protected $useCaPath=false;
+     protected $caPath ;
      //微信返回值
      protected $response;
 
@@ -58,6 +60,7 @@ abstract class WxpayClientBase
              if (isset($options["cert_path"])&&isset($options["key_path"])){
                  $this->certPath=$options["cert_path"];
                  $this->keyPath=$options["key_path"];
+                 isset($options["ca_path"])&&$this->caPath = $options["ca_path"];
              }
              if (empty($this->options)){
                  throw  new  Exception("参数缺失");
@@ -100,8 +103,8 @@ abstract class WxpayClientBase
     function createXml()
     {
         $this->checkParams();
-        $this->params["appid"] = $this->options["appid"];                  //config('wechat_appid');//公众账号ID
-        $this->params["mch_id"] =   $this->options["mch_id"];           //config('wechat_mchid');//商户号
+        $this->params["appid"] = $this->options["appid"];                  //公众账号ID
+        $this->params["mch_id"] =   $this->options["mch_id"];           //商户号
         $this->params["nonce_str"] = Tools::createNonceStr();//随机字符串
         $this->params["sign"] = Tools::getSignByKey($this->params,$this->options["key"]);//签名
         return  Tools::arrayToXml($this->params);
@@ -129,7 +132,12 @@ abstract class WxpayClientBase
             throw  new  Exception("缺失证书相关参数");
         }
         $xml = $this->createXml();
-        $this->response = Tools::postXmlSSLCurl($xml,$this->url,$certPath,$keyPath,$this->curlTimeout);
+        if ( $this->useCaPath ){
+            $this->caPath=pathinfo(__FILE__)["dirname"]."/../cert/rootca.pem";
+            $this->response = Tools::postXmlSSLCurl($xml,$this->url,$certPath,$keyPath,$this->caPath ,$this->curlTimeout);
+        }else{
+            $this->response = Tools::postXmlSSLCurl($xml,$this->url,$certPath,$keyPath,false,$this->curlTimeout);
+        };
         return $this->response;
     }
 
@@ -144,8 +152,21 @@ abstract class WxpayClientBase
         return $this->result;
     }
 
+    function getResultBySSLCurl()
+    {
+        $this->postXmlSSL();
+        $this->result = Tools::xmlToArray($this->response);
+        return $this->result;
+    }
+
+
     public function getResponse(){
         return $this->response;
+    }
+
+    public function getResponseMsg(){
+        $response = Tools::xmlToArray($this->response);
+        return isset($response["return_msg"])?$response["return_msg"]:"";
     }
 
 

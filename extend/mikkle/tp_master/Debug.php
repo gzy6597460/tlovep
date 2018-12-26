@@ -27,5 +27,9 @@ use think\Facade;
  */
 class Debug extends Facade
 {
+    protected static function getFacadeClass()
+    {
+        return 'think\Debug';
+    }
 
 }

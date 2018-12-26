@@ -327,6 +327,10 @@ class Redis{
         return $this->redisObj[$this->sn]->zCard($key);
     }
 
+    public function zCount($key, $start, $end ){
+        return $this->redisObj[$this->sn]->zCount($key, $start, $end );
+    }
+
 
 
     /*------------------------------------4.end sort set结构----------------------------------------------------*/
@@ -457,7 +461,7 @@ class Redis{
      * @param string $key  ,要改变的键值
      * @param int $num ，改变的幅度，默认为1
      * @param string $member ，类型是zset或hash，需要在输入member或filed字段
-     * @param string $type，类型，default为普通增减,还有:zset,hash
+     * @param string $type //，类型，default为普通增减,还有:zset,hash
      * @return bool|int 成功返回自增后的scroll整数，失败返回false
      */
     public function incre($key,$num = 1,$member = '',$type=''){

@@ -69,7 +69,7 @@ abstract class TimingWorkerBase extends WorkerBase
                 case (self::checkCommandRun()):
                     $time = $instance->getRunTime($runTime);
                     $num = $instance->redis()->incre($instance->listNum);
-                    Log::notice("添加了 $num 号定时任务");
+                    Log::notice($instance->workerName."/添加了 $num 号定时任务");
                     $instance->redis()->zAdd($instance->listName, [$time => $num]);
                     $instance->redis()->hSet($instance->listData, $num, $data);
                     Log::notice("Timing Command service start work!!");
@@ -108,7 +108,7 @@ abstract class TimingWorkerBase extends WorkerBase
                         if ($redisData) {
                             $data = json_decode($redisData, true);
                             $result = $instance->runHandle($data);
-                            Log::notice("执行{$num}编号任务");
+                            Log::notice($instance->workerName."/执行{$num}编号任务");
                             if ($instance->saveLog) {
                                 $instance->saveRunLog($result, $data);
                             }
@@ -126,7 +126,7 @@ abstract class TimingWorkerBase extends WorkerBase
                 $instance->clearWorker();
             }
             echo "执行了{$i}次任务,剩余未执行任务[{$re}]项" . PHP_EOL;
-            Log::notice("执行了{$i}次任务,剩余未执行任务[{$re}]项");
+            Log::notice($instance->workerName."/执行了{$i}次任务,剩余未执行任务[{$re}]项");
         } catch (Exception $e) {
             //Log::error($e);
             Log::error($e->getMessage());

@@ -8,6 +8,8 @@
  */
 
 namespace mikkle\tp_tools;
+use mikkle\tp_master\Env;
+
 /**
  * RSA算法类
  * 签名及密文编码：base64字符串/十六进制字符串/二进制字符串流
@@ -31,8 +33,6 @@ class Rsa
      * @param string 私钥文件（签名和解密时传入）
      */
     public function __construct($public_key_file = '', $private_key_file = ''){
-        $public_key_file = $public_key_file ? $public_key_file : ROOT_PATH.'ssl/pay.crt' ;
-        $private_key_file = $private_key_file ? $private_key_file : ROOT_PATH.'ssl/pay.pem' ;
         if ($public_key_file){
             $this->_getPublicKey($public_key_file);
         }
@@ -184,7 +184,7 @@ class Rsa
      * Power by Mikkle
      * QQ:776329498
      */
-    public function buildNewKey(){
+    static public function buildNewKey(){
         $resource = openssl_pkey_new();
         openssl_pkey_export($resource, $privateKey);
         $detail = openssl_pkey_get_details($resource);
