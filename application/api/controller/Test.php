@@ -40,7 +40,7 @@ class Test extends Api
 //        //2
 //        $res =Curl::get('www.baidu.com');
         //3
-//        $res = $curl->get('www.baidu.com');
+//        $res = $curl->get('www.baidu.com');1
         $this->success('nihao',1);
     }
 }
